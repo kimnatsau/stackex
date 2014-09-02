@@ -4,15 +4,17 @@ class UserController < ApplicationController
 		
 	end
 	def create
-		if User.find_by(name: params[:name])
-			
-		end
-		@user=User.new
-		get_user
-		if @user.save
+		if @user=User.find_by(name: user_params[:name])
+			get_tags
+		else
+			@user=User.new
+			get_user
+				if @user.save
 
 			
+				end
 		end
+
 		
 	end
 	private
@@ -29,13 +31,33 @@ class UserController < ApplicationController
       if user_data['items'][0]["display_name"]==name
             @user.stack_id=(user_data['items'][0]["account_id"])
             @user.name=(user_data['items'][0]["display_name"])
+
            end    
-      else      
+      else 
+
     end
 		
-	end
-	def get_qustion
+end
+	def get_tags
+		$URL_id = "https://api.stackexchange.com/2.2/users/#{@user.stack_id}/top-tags?site=stackoverflow"
+      	response = Net::HTTP.get_response(URI.parse($URL_id))
+      	tag_data=JSON.parse(response.body)
+      	if tag_data['items'][0]
+      		get_question(tag_data['items'][0]["tag_name"])
+      	else
+      		
 
+      	end
+
+
+		
+	end
+	def get_question(tag)
+		$URL_id = "https://api.stackexchange.com/2.2/tags/#{tag}/faq?site=stackoverflow"
+      	response = Net::HTTP.get_response(URI.parse($URL_id))
+      	tag_data=JSON.parse(response.body)
+      	render :text => tag_data
+      	# render layout: "question"
 		
 	end
 end
